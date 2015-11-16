@@ -18,6 +18,7 @@ from game import Directions
 from keyboardAgents import KeyboardAgent
 import inference
 import busters
+import operator
 
 class NullGraphics:
     "Placeholder for graphics"
@@ -156,11 +157,54 @@ class GreedyBustersAgent(BustersAgent):
              indices into this list should be 1 less than indices into the
              gameState.getLivingGhosts() list.
         """
+        # Pacman's position
         pacmanPosition = gameState.getPacmanPosition()
+        # Pacman's legal actions
         legal = [a for a in gameState.getLegalPacmanActions()]
+        # Bool list of what ghosts are alive
         livingGhosts = gameState.getLivingGhosts()
+        # Dictionary of tuples (locations) and floats (probs)
         livingGhostPositionDistributions = \
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        # Calculates the closest ghost to pacman
+        closestGhostPos = 99999999 # Arbitrarily large value to be overtaken
+
+        for ghostDict in livingGhostPositionDistributions:
+            # takes max value from dict (the pos with highest prob in this case)
+            ghostPos = max(ghostDict.iteritems(), key=operator.itemgetter(1))[0]
+            # Updates closest ghost pos if pacman is closer to new pos
+            if self.distancer.getDistance(pacmanPosition, ghostPos) < closestGhostPos:
+                closestGhostPos = ghostPos
+
+        bestMoveDist = 99999999 # Arbitrarily large again
+        bestAction = None
+        for action in legal:
+            newPos = Actions.getSuccessor(pacmanPosition, action)
+            newMoveDist = self.distancer.getDistance(newPos, closestGhostPos)
+            if newMoveDist < bestMoveDist:
+                bestMoveDist = newMoveDist
+                bestAction = action
+
+        return bestAction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
