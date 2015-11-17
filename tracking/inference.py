@@ -266,12 +266,14 @@ class ParticleFilter(InferenceModule):
         """
         "*** YOUR CODE HERE ***"
         #print "Is the error here?"
-        self.particles=[]
+        inituniform=[]
         posCount = len(self.legalPositions)
-        particleCount = self.numParticles / posCount
-        for pos in self.legalPositions:
-            for x in xrange(0, particleCount):
-                self.particles.append(pos)
+        legalpos=self.legalPositions
+        particleCount = self.numParticles
+        while particleCount > 0:
+            inituniform+=legalpos
+            particleCount-=len(legalpos)
+        self.particles= inituniform
                         
 
     def observe(self, observation, gameState):
@@ -351,10 +353,16 @@ class ParticleFilter(InferenceModule):
         a belief distribution.
         """
         "*** YOUR CODE HERE ***"
-        allPossible = util.Counter()
+        allPossible = []
+
         for particle in self.particles:
+            xarray=[]
+            yarray=[]
             newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, particle))
-            allPossible[particle]= util.sample(newPosDist)
+            for x,y in newPosDist:
+                xarray.append(x)
+                yarray.append(y)
+            allPossible.append(util.sample(xarray,yarray))
         #allPossible.normalize()
         self.beliefs = allPossible
 
@@ -367,6 +375,7 @@ class ParticleFilter(InferenceModule):
         """
         "*** YOUR CODE HERE ***"
         #print "is there here? belief"
+        #print "is the error here"
         beliefDistribution = util.Counter()
         for particle in self.particles:
             beliefDistribution[particle] += 1.0
